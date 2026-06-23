@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoffeeBag — Electronic Press Kit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --off-black: #111111;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0ede8;
+    --muted: #888882;
+    --accent: #c8f53e;
+    --accent2: #8b5cf6;
+    --accent3: #06b6d4;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  .noise {
+    position: fixed; inset: 0; z-index: 9999;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor-dot {
+    position: fixed; width: 6px; height: 6px; z-index: 10000;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; mix-blend-mode: difference;
+    transition: transform 0.1s;
+  }
+  .cursor-ring {
+    position: fixed; width: 40px; height: 40px; z-index: 9999;
+    border: 1px solid rgba(200,245,62,0.3); border-radius: 50%;
+    pointer-events: none; mix-blend-mode: difference;
+    transition: width 0.3s, height 0.3s, border-color 0.3s;
+  }
+
+  /* GLOW ORB */
+  .glow-orb {
+    position: fixed; width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    transform: translate(-50%, -50%);
+    transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,10,0.7);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+    transition: background 0.4s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.92); }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .nav-links { display: flex; gap: 2.5rem; }
+  .nav-links a {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    position: relative;
+    transition: color 0.3s;
+    padding: 4px 0;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute; bottom: -2px; left: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* REVEAL ANIMATIONS */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 5rem 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 70% 30%, rgba(139,92,246,0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 70% at 20% 80%, rgba(200,245,62,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 50%),
+      var(--black);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 60%, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 60%, black 30%, transparent 70%);
+  }
+  .hero-particles {
+    position: absolute; inset: 0; overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float-particle 8s infinite;
+  }
+
+  .hero-section {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-section::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+  .hero-name {
+    font-size: clamp(5rem, 15vw, 12rem);
+    font-weight: 700;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    position: relative; z-index: 2;
+    color: var(--text);
+    text-shadow: 0 0 80px rgba(200,245,62,0.05);
+  }
+  .hero-name .line { display: block; }
+  .hero-name .accent-text {
+    color: var(--accent);
+    display: inline-block;
+    position: relative;
+  }
+  .hero-name .accent-text::after {
+    content: '';
+    position: absolute; bottom: 8px; left: 0; right: 0;
+    height: 4px; background: var(--accent);
+    opacity: 0.3; transform: scaleX(0);
+    transform-origin: left;
+    animation: underline-in 0.8s 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  }
+  .hero-tagline {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-top: 2rem;
+    max-width: 520px;
+    position: relative; z-index: 2;
+    line-height: 1.7;
+  }
+  .hero-tags {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    margin-top: 1.8rem;
+    position: relative; z-index: 2;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,245,62,0.04);
+  }
+  .tag.accent { border-color: var(--accent); color: var(--accent); }
+
+  /* SCROLL INDICATOR */
+  .scroll-indicator {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: 0.4;
+    animation: fade-in-out 2s ease-in-out infinite;
+  }
+  .scroll-indicator span {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+  }
+
+  /* SECTIONS */
+  section { padding: 6rem 5rem; position: relative; z-index: 1; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 3.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* BIO */
+  .bio-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 5rem;
+    align-items: start;
+  }
+  .bio-short {
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .bio-short em {
+    font-style: normal;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .bio-long {
+    font-size: 0.93rem;
+    color: var(--muted);
+    line-height: 1.9;
+    border-left: 1.5px solid var(--accent);
+    padding-left: 1.8rem;
+    position: relative;
+  }
+  .bio-long::before {
+    content: '"';
+    position: absolute; top: -12px; left: 10px;
+    font-size: 3rem; color: var(--accent);
+    font-family: var(--mono);
+    opacity: 0.3;
+  }
+
+  /* PHOTO SECTION */
+  .photo-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 520px;
+    position: relative;
+  }
+  .photo-image {
+    overflow: hidden; position: relative;
+  }
+  .photo-image img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .photo-image:hover img { transform: scale(1.03); }
+  .photo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, transparent 60%, var(--black));
+    pointer-events: none;
+  }
+  .photo-overlay-2 {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 70%, rgba(10,10,10,0.5));
+    pointer-events: none;
+  }
+  .photo-content {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 3.5rem;
+    background: var(--off-black);
+    position: relative;
+  }
+  .photo-content::before {
+    content: '';
+    position: absolute; top: 0; left: 0; width: 2px; height: 80px;
+    background: var(--accent);
+  }
+  .photo-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--accent);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .photo-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .photo-name .smaller { font-size: 1.8rem; color: var(--muted); font-weight: 400; }
+  .photo-desc {
+    color: var(--muted);
+    font-size: 0.93rem;
+    line-height: 1.9;
+    margin-bottom: 2.5rem;
+    max-width: 400px;
+  }
+  .photo-meta {
+    display: flex; flex-direction: column; gap: 0.7rem;
+  }
+  .photo-meta-row {
+    display: flex; gap: 1.2rem; align-items: center;
+  }
+  .photo-meta-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    min-width: 90px;
+  }
+  .photo-meta-value {
+    font-size: 0.88rem; color: var(--muted);
+  }
+
+  /* GENRES GRID */
+  .genres {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .genre-card {
+    background: var(--off-black);
+    padding: 2.5rem 2rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+  .genre-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .genre-card:hover {
+    background: var(--surface);
+    transform: translateY(-2px);
+  }
+  .genre-card:hover::before { transform: scaleX(1); }
+  .genre-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+  }
+  .genre-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    transition: color 0.3s;
+  }
+  .genre-card:hover .genre-name { color: var(--accent); }
+  .genre-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  /* PROJECT */
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .project-info { }
+  .project-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .project-title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 1.2rem;
+  }
+  .project-desc {
+    color: var(--muted);
+    font-size: 0.93rem;
+    line-height: 1.9;
+    margin-bottom: 2rem;
+  }
+  .project-link {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 0.5px solid var(--accent);
+    padding: 12px 24px;
+    text-decoration: none;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-link::before {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: var(--accent);
+    transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    z-index: -1;
+  }
+  .project-link:hover { color: var(--black); }
+  .project-link:hover::before { left: 0; }
+
+  .project-tech {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    padding: 2.5rem;
+    display: flex; flex-direction: column; gap: 1.2rem;
+  }
+  .project-tech-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .project-tech-tags {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+  }
+  .tech-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 12px;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+    transition: all 0.3s;
+  }
+  .tech-tag:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(139,92,246,0.05);
+  }
+  .project-status {
+    border-top: 0.5px solid var(--border);
+    padding-top: 1.2rem;
+    margin-top: 0.5rem;
+  }
+  .project-status-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .project-status-indicator {
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .status-text {
+    font-size: 0.9rem; color: var(--text);
+  }
+
+  /* MUSIC */
+  .tracks { display: flex; flex-direction: column; }
+  .track {
+    display: grid;
+    grid-template-columns: 50px 1fr 120px auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 1rem;
+    border-bottom: 0.5px solid var(--border);
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+  }
+  .track::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .track:hover { background: rgba(255,255,255,0.02); padding-left: 1.5rem; }
+  .track:hover::before { transform: scaleY(1); }
+  .track:first-of-type { border-top: 0.5px solid var(--border); }
+  .track-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .track-title { font-size: 0.95rem; font-weight: 500; }
+  .track-genre { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+  .track-platform {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .track-link {
+    font-size: 0.78rem;
+    color: var(--accent3);
+    text-decoration: none;
+    border: 0.5px solid currentColor;
+    padding: 5px 14px;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .track-link:hover { background: var(--accent3); color: var(--black); }
+
+  .social-links {
+    margin-top: 3rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+  .social-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border: 0.5px solid var(--border2);
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .social-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,245,62,0.04);
+    transform: translateY(-2px);
+  }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .stat-cell {
+    background: var(--off-black);
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-cell::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .stat-cell:hover::after { transform: scaleX(1); }
+  .stat-num {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    font-family: var(--mono);
+    letter-spacing: -0.04em;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+
+  /* RIDER */
+  .rider-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+  .rider-card {
+    background: var(--surface);
+    padding: 2.5rem;
+    border: none;
+    transition: background 0.3s;
+  }
+  .rider-card:hover { background: var(--surface2); }
+  .rider-card h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rider-card h3::before {
+    content: '//';
+    color: var(--border2);
+    font-size: 14px;
+  }
+  .rider-list { list-style: none; }
+  .rider-list li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    padding: 0.6rem 0;
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; gap: 0.75rem;
+    transition: color 0.3s;
+  }
+  .rider-list li:hover { color: var(--text); }
+  .rider-list li::before {
+    content: '—';
+    color: var(--border2);
+    font-family: var(--mono);
+    flex-shrink: 0;
+  }
+  .rider-list li:last-child { border-bottom: none; }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+  .contact-cta {
+    font-size: 2.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .contact-cta .accent-text { color: var(--accent); }
+  .contact-sub {
+    color: var(--muted);
+    margin-top: 1.5rem;
+    font-size: 0.93rem;
+    line-height: 1.9;
+  }
+  .contact-details { display: flex; flex-direction: column; gap: 0.5px; }
+  .contact-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.2rem 1.5rem;
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s;
+  }
+  .contact-row:hover {
+    border-color: var(--accent);
+    background: rgba(200,245,62,0.03);
+    transform: translateX(4px);
+  }
+  .contact-icon {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    min-width: 80px;
+  }
+  .contact-val { font-size: 0.88rem; color: var(--muted); }
+
+  /* FOOTER */
+  footer {
+    padding: 2.5rem 5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--off-black);
+    border-top: 0.5px solid var(--border);
+  }
+  .footer-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .footer-note .accent { color: var(--accent); }
+
+  /* KEYFRAMES */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  @keyframes float-particle {
+    0% { opacity: 0; transform: translateY(0) translateX(0); }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-200px) translateX(100px); }
+  }
+  @keyframes underline-in {
+    to { transform: scaleX(1); }
+  }
+  @keyframes fade-in-out {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .genres { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+    .hero { padding: 0 1.5rem 4rem; }
+    section { padding: 4rem 1.5rem; }
+    .bio-grid, .contact-grid, .project-grid, .photo-section { grid-template-columns: 1fr; gap: 2rem; }
+    .rider-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .genres { grid-template-columns: 1fr; }
+    footer { padding: 1.5rem; flex-direction: column; gap: 1rem; text-align: center; }
+    .track { grid-template-columns: 36px 1fr auto; padding: 1rem 0.5rem; }
+    .track:hover { padding-left: 1rem; }
+    .track-platform { display: none; }
+    .photo-name { font-size: 2rem; }
+    .photo-name .smaller { font-size: 1.4rem; }
+    .contact-cta { font-size: 2rem; }
+    .hero-name .accent-text::after { bottom: 4px; height: 3px; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+  @media (max-width: 480px) {
+    .hero-name { font-size: clamp(3rem, 12vw, 5rem); }
+    .stat-num { font-size: 2.2rem; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* SELECTION */
+  ::selection { background: var(--accent); color: var(--black); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="glow-orb" id="glowOrb"></div>
+
+<nav id="nav">
+  <div class="nav-logo">CoffeeBag EPK</div>
+  <div class="nav-links">
+    <a href="#bio">Bio</a>
+    <a href="#music">Music</a>
+    <a href="#building">Projects</a>
+    <a href="#rider">Technical</a>
+    <a href="#contact">Booking</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-particles" id="particles"></div>
+
+  <h1 class="hero-name reveal visible reveal-delay-1">
+    <span class="line">Coffee<span class="accent-text">Bag</span></span>
+  </h1>
+
+  <p class="hero-tagline reveal visible reveal-delay-2">Wired imagination in a rhythmic night. Independent electronic music producer from India — making music since 2018.</p>
+  <div class="hero-tags reveal visible reveal-delay-3">
+    <span class="tag accent">Techno</span>
+    <span class="tag accent">Melodic Techno</span>
+    <span class="tag accent">Afro House</span>
+    <span class="tag accent">Deep House</span>
+    <span class="tag">DJ · Live</span>
+    <span class="tag">Finger Drumming</span>
+    <span class="tag">Gesture MIDI</span>
+    <span class="tag">Layalok Music Studio</span>
+    <span class="tag">Panipat, India</span>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- BIO -->
+<section id="bio">
+  <div class="section-label reveal">Artist Bio</div>
+  <div class="bio-grid">
+    <div class="bio-short reveal reveal-delay-1">
+      CoffeeBag is the project of <em>Saksham Dhingra</em> — a producer, DJ, and studio owner driven by the tension between raw mechanical energy and melodic warmth. Operating from <em>Layalok Music Studio</em> in Panipat, Haryana, his productions straddle underground Techno and the percussive pulse of Afro House, filtered through a uniquely Indian sensibility.
+    </div>
+    <div class="bio-long reveal reveal-delay-2">
+      <p>Trained in Sound Engineering at ILM Gurgaon and holding a Diploma in AI Mastery (2025), Saksham brings both technical rigour and forward-thinking production methods to CoffeeBag. His workflow spans Ableton Live and Pro Tools, with a creative practice that increasingly fuses generative AI tools with traditional sound design.</p>
+      <br>
+      <p>As the founder of <strong>Layalok Music Studio</strong> — his own production space in Panipat — Saksham has built an environment dedicated entirely to electronic music creation, from sound design and mixing to live performance rehearsal and finger drumming.</p>
+      <br>
+      <p>His Bollywood electronic remixes bridge the gap between the Indian mainstream and global club culture — reframing familiar melodies through driving kick patterns and wide, hypnotic pads. It's a sound that feels both immediately recognisable and entirely new.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO -->
+<section style="padding: 0;">
+  <div class="photo-section">
+    <div class="photo-image">
+      <svg width="0" height="0" style="position:absolute;">
+        <defs>
+          <clipPath id="hexClip"><polygon points="450,70 700,70 700,480 450,480 150,480 150,70"/></clipPath>
+        </defs>
+      </svg>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAAMgCAYAAADbcAZoAAAgAElEQVR4nOy9CZhlV1nv/Vtr733OHKqqu6vTmZOQEEKAQAg4IEgUv4BCFBQUAa+CoigoCIL+yUdAceYLKCg3yIcgVwUHiLAIJOEKYQghhJCEJOkO6XSn56qac557zrD3ftdae+1TVYmkO9Rd3e9Tz+muqrPPOXuvVnu93/sOhiGCIiAIgAiICAICAICAgiAIgAAICAiAAAiAAAiAIAAAAAAAAAAAACAiAn+/AQAAAAAAAAAAAACAIAAAIACAAAiAAIAIAAIiAAAgAAIgAAqAAAoiICACAAAgICACIgAAIAIAACIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAQ4iIqNXc3+o/jYiIiIjIf+4/z38PEdF9v73vc7v//N7HfbjH3vfY933sQx3zoc59qGMd6v2Hep6IiLbPd/s8IiIS/yUiIvr3t4t8j3/7v9M97ttDfPbBnuOhHi8iIiIiIiIiIvLQ5wQRkXuOFxERERERERERkQfe4P3e/0X/+38f6v0P99iIiDzI933/67+Pc30gRERERLhc4HKByxecT4nzCXA+IJx3uDvAPp+wPeV2ys0ym1NpXMi4kHquMPVSJlpvlPXC6pPw2It5/HoAQERk+yU7TzoR+f/I/b/v/tODfd9Dff6BfuZ7H/uB7vG93//Bznetn2/n/xdftl9/RETk/iIisn0NERERESFARMQ/wwMAAPf+hQAAgAiAAAiAAAiAiIAIIAgIAAhXIlx+L8IPINoAgAACIAACIAAAIiIAIkAQBEGAO30QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMY1u3BgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDxLYlcO+///v3SyJ3/77fb6D0fY+37/GIiO77Xu/2fbd9PRER+3/v+/f73u/u38P3/xR+f48IAAAAAAAAAAAgIiIizksHh3tJ+M732j797/v6nnu0fT4AIiKy/V7p/b5v+7xe36ft8+z/ve9z5N7vdfv5d/8M3/tzBQAAAAAAAACAhxnbLrPdN8G3meV2R7fdz9vuabN9orZ9QrbdX9s+77Y/d/ucZPt89n/bJyVbx9s+n+1zbB9v+xxbRERERERE5P6/R0Tk/m+/+2e4+2d8r++5+xoAANz9/+3O49vH2T5G+9+Y7c/b/rfM9t9s+5rC9vHb/nft//n/fV+3/XO1fT3bP0+2f87bP0+yfW7bP5cA8JCFSURERERERH7wT+JeeiAiIiICACB37zS83/4O78G+HgC8n8e5X37jICL3M4mHcuz5d8/tISIi8uDnKiIi8p2YhIiIiIiIiIiIiIjIPQzhbsB5H1PI/QH5niIhIiIiIiIiIiIiD4dC5nt+Jo4fIiIiIiIiIiIiIiIiIiIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMADcufOnbu/3/u937v9Pm337/7u797r577v+733fu/3fu/n+/3e7/193/d7v/f7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vd/7vvu///f7vd/7vd/7vd/7vd/7vd/7vd/7vd+7f9/7f/7v//7v937v933f933f933f933f933f933f933fe79/7/f7/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+/3+//g/3+/3+/3+/3+/3+/3+/3+//g/3+/3+/3+/3+/3+/3+/j/u/3+/3+/3+/3+/3+/3+//j/3+P2/3+/3+/3+/3+/3+/3+/3+/3+//j/3+P2/3+/3+/3+/3+/3+/3+/3+//j/3+P1/3+/3+/3+/3+/3+/3+//j/3+P2/3+/3+/3+/3+/3+/3+/3+//j/3+///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v/v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v////3+//v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v////3+//v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v////3+//v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v////3+//v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///V///9/v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///d///9/v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///v///aXwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAQOXFg3gRBVVYTkSGBiEhAEADEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwD8wAtjDcAoz8D9TwwMAAAAASUVORK5CYII="
+           alt="CoffeeBag" style="width:100%;height:100%;object-fit:cover;" />
+      <div class="photo-overlay"></div>
+      <div class="photo-overlay-2"></div>
+    </div>
+    <div class="photo-content">
+      <div class="photo-eyebrow reveal reveal-delay-1">The Artist</div>
+      <h2 class="photo-name reveal reveal-delay-2">Saksham<br/><span class="smaller">Dhingra</span></h2>
+      <p class="photo-desc reveal reveal-delay-3">Producer. DJ. Studio founder. Finger drummer. Based in Panipat, Haryana — building a sound that bridges Indian culture and global electronic music from his own studio, Layalok.</p>
+      <div class="photo-meta reveal reveal-delay-4">
+        <div class="photo-meta-row">
+          <span class="photo-meta-label">Making music</span>
+          <span class="photo-meta-value">Since 2018</span>
+        </div>
+        <div class="photo-meta-row">
+          <span class="photo-meta-label">Studio</span>
+          <span class="photo-meta-value">Layalok Music Studio</span>
+        </div>
+        <div class="photo-meta-row">
+          <span class="photo-meta-label">DAW</span>
+          <span class="photo-meta-value">Ableton Live · Pro Tools</span>
+        </div>
+        <div class="photo-meta-row">
+          <span class="photo-meta-label">Education</span>
+          <span class="photo-meta-value">Sound Engineering, ILM Gurgaon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GENRES -->
+<section style="padding-top: 0; border-bottom: none;">
+  <div class="section-label reveal">Sound</div>
+  <div class="genres">
+    <div class="genre-card reveal reveal-delay-1">
+      <div class="genre-num">01</div>
+      <div class="genre-name">Techno</div>
+      <div class="genre-desc">Industrial textures, relentless kick, hypnotic repetition. Built for peak-hour darkness.</div>
+    </div>
+    <div class="genre-card reveal reveal-delay-2">
+      <div class="genre-num">02</div>
+      <div class="genre-name">Melodic Techno</div>
+      <div class="genre-desc">Atmospheric leads and emotional depth layered over a driving techno framework.</div>
+    </div>
+    <div class="genre-card reveal reveal-delay-3">
+      <div class="genre-num">03</div>
+      <div class="genre-name">Afro House</div>
+      <div class="genre-desc">Percussive, alive, and rooted in rhythm. Groove-forward productions with global soul.</div>
+    </div>
+    <div class="genre-card reveal reveal-delay-4">
+      <div class="genre-num">04</div>
+      <div class="genre-name">Deep House</div>
+      <div class="genre-desc">Warm sub bass, soulful chords, and the quiet tension of a late-night dancefloor.</div>
+    </div>
+    <div class="genre-card reveal reveal-delay-5">
+      <div class="genre-num">05</div>
+      <div class="genre-name">Bollywood Electronic</div>
+      <div class="genre-desc">Reimagining iconic Indian melodies through a modern club lens. Where two worlds collide.</div>
+    </div>
+    <div class="genre-card reveal reveal-delay-5">
+      <div class="genre-num">06</div>
+      <div class="genre-name">Finger Drumming</div>
+      <div class="genre-desc">Live pad performance and rhythmic expression — turning production instincts into real-time musicianship.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT -->
+<section id="building">
+  <div class="section-label reveal">Currently Building</div>
+  <div class="project-grid">
+    <div class="project-info">
+      <div class="project-eyebrow reveal reveal-delay-1">In Development</div>
+      <h2 class="project-title reveal reveal-delay-2">Gesture Control MIDI</h2>
+      <p class="project-desc reveal reveal-delay-3">A BLE-powered gesture control system that bridges physical movement and music production — turning hand gestures into MIDI signals for live performance and studio use. Built at the intersection of hardware, AI, and sound design.</p>
+      <a href="https://adstrixpro.com/" target="_blank" class="project-link reveal reveal-delay-4">View Project ↗</a>
+    </div>
+    <div class="project-tech reveal reveal-delay-3">
+      <div class="project-tech-label">Tech Stack</div>
+      <div class="project-tech-tags">
+        <span class="tech-tag">BLE / Bluetooth</span>
+        <span class="tech-tag">MIDI Protocol</span>
+        <span class="tech-tag">Gesture Recognition</span>
+        <span class="tech-tag">Ableton Live</span>
+        <span class="tech-tag">Flutter</span>
+        <span class="tech-tag">Generative AI</span>
+      </div>
+      <div class="project-status">
+        <div class="project-status-label">Status</div>
+        <div class="project-status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text">Active Development</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MUSIC -->
+<section id="music">
+  <div class="section-label reveal">Featured Releases</div>
+  <div class="tracks">
+    <a class="track reveal reveal-delay-1" href="https://www.youtube.com/watch?v=K0Hql1MaJMg&list=OLAK5uy_nTrOkqAoKdpZfpmcajcJMASiz4d_0h35U" target="_blank">
+      <div class="track-num">01</div>
+      <div>
+        <div class="track-title">Latest Original</div>
+        <div class="track-genre">Melodic Techno / Techno</div>
+      </div>
+      <div class="track-platform">YouTube</div>
+      <span class="track-link">Listen ↗</span>
+    </a>
+    <a class="track reveal reveal-delay-2" href="https://youtu.be/r-ywxzYfFr4?si=JDYtqSio43fJ7tko" target="_blank">
+      <div class="track-num">02</div>
+      <div>
+        <div class="track-title">Bollywood Remix Series</div>
+        <div class="track-genre">Afro House / Deep House</div>
+      </div>
+      <div class="track-platform">YouTube</div>
+      <span class="track-link">Watch ↗</span>
+    </a>
+    <a class="track reveal reveal-delay-3" href="https://www.mixcloud.com/Coffee_Bag/deep-techno-mix-studio-mix-by-coffeebag/" target="_blank">
+      <div class="track-num">03</div>
+      <div>
+        <div class="track-title">Deep Techno Mix — Studio Set</div>
+        <div class="track-genre">Deep Techno · Techno</div>
+      </div>
+      <div class="track-platform">Mixcloud</div>
+      <span class="track-link">Listen ↗</span>
+    </a>
+  </div>
+
+  <div class="social-links reveal reveal-delay-4">
+    <a href="https://open.spotify.com/artist/5QQtujNIwIVzjhR7GXwQoW" target="_blank" class="social-btn">Spotify</a>
+    <a href="https://youtube.com/@coffeebagmusic" target="_blank" class="social-btn">YouTube</a>
+    <a href="https://www.mixcloud.com/Coffee_Bag/" target="_blank" class="social-btn">Mixcloud</a>
+    <a href="https://instagram.com/coffeebagmusic" target="_blank" class="social-btn">Instagram</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<section style="padding: 0;">
+  <div class="stats-row">
+    <div class="stat-cell reveal reveal-delay-1">
+      <div class="stat-num">5+</div>
+      <div class="stat-label">Genres</div>
+    </div>
+    <div class="stat-cell reveal reveal-delay-2">
+      <div class="stat-num">60'</div>
+      <div class="stat-label">Standard Set</div>
+    </div>
+    <div class="stat-cell reveal reveal-delay-3">
+      <div class="stat-num">90'</div>
+      <div class="stat-label">Extended Set</div>
+    </div>
+    <div class="stat-cell reveal reveal-delay-4">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">BPM Flexibility</div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNICAL RIDER -->
+<section id="rider">
+  <div class="section-label reveal">Technical Rider</div>
+  <div class="rider-grid">
+    <div class="rider-card reveal reveal-delay-1">
+      <h3>DJ Setup</h3>
+      <ul class="rider-list">
+        <li>2× Pioneer CDJ-2000NXS2 (or equivalent)</li>
+        <li>1× Pioneer DJM-900NXS2 mixer (or equivalent)</li>
+        <li>1× DJ monitor on booth (min. 150W)</li>
+        <li>Stable internet or USB input access</li>
+        <li>RCA/XLR output to main PA</li>
+      </ul>
+    </div>
+    <div class="rider-card reveal reveal-delay-2">
+      <h3>Live Production Setup</h3>
+      <ul class="rider-list">
+        <li>MacBook Pro (artist provided)</li>
+        <li>Ableton Live 11 / 12</li>
+        <li>Audio interface: 2 stereo outs minimum</li>
+        <li>DI boxes or XLR to main desk</li>
+        <li>Power strip (UK/EU adapter on request)</li>
+      </ul>
+    </div>
+    <div class="rider-card reveal reveal-delay-3">
+      <h3>Set Options</h3>
+      <ul class="rider-list">
+        <li>DJ Set — 30 / 60 / 90 minutes</li>
+        <li>Live Ableton Set — 60 / 90 minutes</li>
+        <li>Hybrid DJ + Live — on request</li>
+        <li>B2B collaborations welcomed</li>
+      </ul>
+    </div>
+    <div class="rider-card reveal reveal-delay-4">
+      <h3>Stage & Hospitality</h3>
+      <ul class="rider-list">
+        <li>Soundcheck: 30 min before set</li>
+        <li>Backline area: min. 1m × 1m table</li>
+        <li>Water on stage (room temp)</li>
+        <li>Travel & accommodation on negotiation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label reveal">Booking & Contact</div>
+  <div class="contact-grid">
+    <div>
+      <h2 class="contact-cta reveal reveal-delay-1">Ready to bring <span class="accent-text">CoffeeBag</span> to your stage?</h2>
+      <p class="contact-sub reveal reveal-delay-2">For bookings, collaborations, press requests, or any enquiries — reach out directly. Response within 48 hours.</p>
+      <div class="social-links reveal reveal-delay-3">
+        <a href="https://youtube.com/@coffeebagmusic" target="_blank" class="social-btn">YouTube</a>
+        <a href="https://instagram.com/coffeebagmusic" target="_blank" class="social-btn">Instagram</a>
+        <a href="https://open.spotify.com/artist/5QQtujNIwIVzjhR7GXwQoW" target="_blank" class="social-btn">Spotify</a>
+      </div>
+    </div>
+    <div class="contact-details">
+      <a href="mailto:coffeebag420@icloud.com" class="contact-row reveal reveal-delay-2">
+        <span class="contact-icon">Email</span>
+        <span class="contact-val">coffeebag420@icloud.com</span>
+      </a>
+      <div class="contact-row reveal reveal-delay-3">
+        <span class="contact-icon">Instagram</span>
+        <span class="contact-val">@coffeebagmusic</span>
+      </div>
+      <a href="https://youtube.com/@coffeebagmusic" target="_blank" class="contact-row reveal reveal-delay-3">
+        <span class="contact-icon">YouTube</span>
+        <span class="contact-val">@coffeebagmusic</span>
+      </a>
+      <div class="contact-row reveal reveal-delay-4">
+        <span class="contact-icon">Studio</span>
+        <span class="contact-val">Layalok Music Studio, Panipat, Haryana</span>
+      </div>
+      <div class="contact-row reveal reveal-delay-4">
+        <span class="contact-icon">Available</span>
+        <span class="contact-val">India · International (on request)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-note">© 2025 <span class="accent">CoffeeBag</span> — Saksham Dhingra. All rights reserved.</div>
+  <div class="footer-note">EPK — Do not distribute without permission</div>
+</footer>
+
+<script>
+// CURSOR
+const dot = document.getElementById('cursorDot');
+const ring = document.getElementById('cursorRing');
+
+if (window.innerWidth > 768) {
+  document.addEventListener('mousemove', (e) => {
+    dot.style.transform = `translate(${e.clientX - 3}px, ${e.clientY - 3}px)`;
+    ring.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
+  });
+
+  document.addEventListener('mousedown', () => {
+    ring.style.width = '30px';
+    ring.style.height = '30px';
+  });
+  document.addEventListener('mouseup', () => {
+    ring.style.width = '40px';
+    ring.style.height = '40px';
+  });
+
+  document.querySelectorAll('a, button, .track, .genre-card, .contact-row, .tag, .social-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '56px';
+      ring.style.height = '56px';
+      ring.style.borderColor = 'rgba(200,245,62,0.6)';
+      ring.style.background = 'rgba(200,245,62,0.04)';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '40px';
+      ring.style.height = '40px';
+      ring.style.borderColor = 'rgba(200,245,62,0.3)';
+      ring.style.background = 'transparent';
+    });
+  });
+}
+
+// GLOW ORB
+const orb = document.getElementById('glowOrb');
+document.addEventListener('mousemove', (e) => {
+  orb.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+});
+
+// NAV SCROLL
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 100) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+});
+
+// PARTICLES
+const container = document.getElementById('particles');
+for (let i = 0; i < 40; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.top = Math.random() * 100 + '%';
+  p.style.animationDelay = Math.random() * 8 + 's';
+  p.style.animationDuration = (6 + Math.random() * 6) + 's';
+  p.style.width = (1 + Math.random() * 2) + 'px';
+  p.style.height = p.style.width;
+  container.appendChild(p);
+}
+
+// SCROLL REVEAL
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+</script>
+
+</body>
+</html>
